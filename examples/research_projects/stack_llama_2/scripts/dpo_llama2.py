@@ -26,6 +26,10 @@ class ScriptArguments:
         default="../sft/results/final_checkpoint",
         metadata={"help": "the location of the SFT model name or path"},
     )
+    training_dataset_path: Optional[str] = field(
+        default="../sft/data/processed/stackexchange_questions",
+        metadata={"help": "the location of the training dataset"},
+    )
     learning_rate: Optional[float] = field(default=5e-4, metadata={"help": "optimizer learning rate"})
     lr_scheduler_type: Optional[str] = field(default="cosine", metadata={"help": "the lr scheduler type"})
     warmup_steps: Optional[int] = field(default=100, metadata={"help": "the number of warmup steps"})
@@ -53,6 +57,8 @@ class ScriptArguments:
     eval_steps: Optional[int] = field(default=100, metadata={"help": "the evaluation frequency"})
 
     output_dir: Optional[str] = field(default="./results", metadata={"help": "the output directory"})
+    cache_dataset_dir: Optional[str] = field(default=".cache/huggingface/datasets/dpo", metadata={"help": "the dataset cache directory"})
+    cache_model_dir: Optional[str] = field(default=".cache/huggingface/model/dpo", metadata={"help": "the model cache directory"})
     log_freq: Optional[int] = field(default=1, metadata={"help": "the logging frequency"})
 
     # instrumentation
@@ -76,6 +82,7 @@ class ScriptArguments:
 
 
 def get_stack_exchange_paired(
+    path: str = "lvwerra/stack-exchange-paired",
     data_dir: str = "data/rl",
     sanity_check: bool = False,
     cache_dir: str = None,
@@ -94,7 +101,7 @@ def get_stack_exchange_paired(
       "Question: " + <prompt> + "\n\nAnswer: "
     """
     dataset = load_dataset(
-        "lvwerra/stack-exchange-paired",
+        path,
         split="train",
         cache_dir=cache_dir,
         data_dir=data_dir,
@@ -129,6 +136,7 @@ if __name__ == "__main__":
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
         load_in_4bit=True,
+        cache_dir=script_args.cache_model_dir,
     )
     model.config.use_cache = False
 
@@ -148,14 +156,14 @@ if __name__ == "__main__":
     tokenizer.pad_token = tokenizer.eos_token
 
     # 2. Load the Stack-exchange paired dataset
-    train_dataset = get_stack_exchange_paired(data_dir="data/rl", sanity_check=script_args.sanity_check)
+    train_dataset = get_stack_exchange_paired(path=script_args.cache_dataset_dir, data_dir="data/rl", sanity_check=script_args.sanity_check, cache_dir=script_args.cache_dataset_dir)
     train_dataset = train_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
     )
 
     # 3. Load evaluation dataset
-    eval_dataset = get_stack_exchange_paired(data_dir="data/evaluation", sanity_check=True)
+    eval_dataset = get_stack_exchange_paired(path=script_args.cache_dataset_dir, data_dir="data/evaluation", sanity_check=True, cache_dir=script_args.cache_dataset_dir)
     eval_dataset = eval_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length

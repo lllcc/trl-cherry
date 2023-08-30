@@ -102,6 +102,7 @@ def create_datasets(tokenizer, args):
         args.dataset_name,
         data_dir=args.subset,
         split=args.split,
+        cache_dir="./.cache/huggingface/datasets/sft",
         use_auth_token=True,
         num_proc=args.num_workers if not args.streaming else None,
         streaming=args.streaming,
@@ -109,7 +110,7 @@ def create_datasets(tokenizer, args):
     if args.streaming:
         print("Loading the dataset in streaming mode")
         valid_data = dataset.take(args.size_valid_set)
-        train_data = dataset.skip(args.size_valid_set)
+        train_data = dataset.take(args.size_valid_set * 10)
         train_data = train_data.shuffle(buffer_size=args.shuffle_buffer, seed=None)
     else:
         dataset = dataset.train_test_split(test_size=0.005, seed=None)
@@ -151,6 +152,7 @@ base_model = AutoModelForCausalLM.from_pretrained(
     device_map={"": 0},
     trust_remote_code=True,
     use_auth_token=True,
+    cache_dir="./.cache/huggingface/models/sft",
 )
 base_model.config.use_cache = False
 
