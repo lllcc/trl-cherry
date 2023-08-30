@@ -57,8 +57,8 @@ class ScriptArguments:
     eval_steps: Optional[int] = field(default=100, metadata={"help": "the evaluation frequency"})
 
     output_dir: Optional[str] = field(default="./results", metadata={"help": "the output directory"})
-    cache_dataset_dir: Optional[str] = field(default=".cache/huggingface/datasets/dpo", metadata={"help": "the dataset cache directory"})
-    cache_model_dir: Optional[str] = field(default=".cache/huggingface/model/dpo", metadata={"help": "the model cache directory"})
+    cache_dataset_dir: Optional[str] = field(default="~/SageMaker/.cache/huggingface/datasets/dpo", metadata={"help": "the dataset cache directory"})
+    cache_model_dir: Optional[str] = field(default="~/SageMaker/.cache/huggingface/model/dpo", metadata={"help": "the model cache directory"})
     log_freq: Optional[int] = field(default=1, metadata={"help": "the logging frequency"})
 
     # instrumentation

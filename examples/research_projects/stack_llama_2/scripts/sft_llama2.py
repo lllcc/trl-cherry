@@ -102,7 +102,7 @@ def create_datasets(tokenizer, args):
         args.dataset_name,
         data_dir=args.subset,
         split=args.split,
-        cache_dir="./.cache/huggingface/datasets/sft",
+        cache_dir="~/SageMaker/.cache/huggingface/datasets/sft",
         use_auth_token=True,
         num_proc=args.num_workers if not args.streaming else None,
         streaming=args.streaming,
@@ -152,7 +152,7 @@ base_model = AutoModelForCausalLM.from_pretrained(
     device_map={"": 0},
     trust_remote_code=True,
     use_auth_token=True,
-    cache_dir="./.cache/huggingface/models/sft",
+    cache_dir="~/SageMaker/.cache/huggingface/models/sft",
 )
 base_model.config.use_cache = False
 
