@@ -50,6 +50,7 @@ class ScriptArguments:
     optimizer_type: Optional[str] = field(default="paged_adamw_32bit", metadata={"help": "the optimizer type"})
 
     output_dir: Optional[str] = field(default="./results", metadata={"help": "the output directory"})
+    tokenizer_path: Optional[str] = field(default="", metadata={"help": "the tokenizer directory"})
     log_freq: Optional[int] = field(default=1, metadata={"help": "the logging frequency"})
 
 
@@ -165,7 +166,7 @@ peft_config = LoraConfig(
     task_type="CAUSAL_LM",
 )
 
-tokenizer = AutoTokenizer.from_pretrained(script_args.model_name, trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained(script_args.tokenizer_path, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.padding_side = "right"  # Fix weird overflow issue with fp16 training
 
